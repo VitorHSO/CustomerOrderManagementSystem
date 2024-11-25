@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using COMS.Application.DTOs.Customer;
+using COMS.Application.DTOs.Transaction;
 using COMS.Application.Interfaces;
 using COMS.Domain.Entities;
 using COMS.Domain.Interfaces;
@@ -10,11 +11,13 @@ namespace COMS.Application.Services
     public class CustomerService : BaseService, ICustomerService
     {
         private readonly ICustomerRepository _customerRepository;
+        private readonly ITransactionRepository _transactionRepository;
         private readonly IMapper _mapper;
 
-        public CustomerService(ICustomerRepository customerRepository, IMapper mapper)
+        public CustomerService(ICustomerRepository customerRepository, ITransactionRepository transactionRepository, IMapper mapper)
         {
             _customerRepository = customerRepository;
+            _transactionRepository = transactionRepository;
             _mapper = mapper;
         }       
 
@@ -47,27 +50,43 @@ namespace COMS.Application.Services
 
         }
 
-        public async Task<ServiceResult<CustomerDetailedDTO>> Add(CustomerDTO customerDTO)
+        public async Task<TransactionDTO> Add(CustomerDTO customerDTO)
         {
-            var customer = _mapper.Map<Customer>(customerDTO);
+            var transaction = CreateTransaction("CustomerAdd", customerDTO);
 
-            var customerAdded = await _customerRepository.Add(customer);
+            var customer = _mapper.Map<Customer>(customerDTO);
+            await _customerRepository.Add(customer);
 
             if (await _customerRepository.SaveChangesAsync())
             {
-                return ServiceResult<CustomerDetailedDTO>.SuccessResult(_mapper.Map<CustomerDetailedDTO>(customerAdded));
+                transaction.Status = "Success";
+                transaction.Description = "Customer created successfully";
+            }
+            else
+            {
+                transaction.Status = "Error";
+                transaction.Description = "The client was not created";
             }
 
-            return ServiceResult<CustomerDetailedDTO>.ErrorResult("Ocorreu um erro ao criar o cliente");
+            await SaveTransactionAsync(transaction);
+
+            return _mapper.Map<TransactionDTO>(transaction);
         }
 
-        public async Task<ServiceResult<CustomerDetailedDTO>> Update(int customerId, CustomerDTO customerDTO)
+        public async Task<TransactionDTO> Update(int customerId, CustomerDTO customerDTO)
         {
-            // Vai dar erro porque o Encript4 vai ser diferente na hora de decriptografar, tem que ver como corrigir
+            var transaction = CreateTransaction("CustomerUpdate", customerDTO);
+
             var customerDb = await _customerRepository.GetById(customerId);
 
             if (customerDb == null)
-                return ServiceResult<CustomerDetailedDTO>.ErrorResult("O cliente não existe");
+            {
+                transaction.Status = "Error";
+                transaction.Description = "The client does not exist";
+                await SaveTransactionAsync(transaction);
+
+                return _mapper.Map<TransactionDTO>(transaction);
+            }
 
             var customer = _mapper.Map<Customer>(customerDTO);
             customerDb.Name = customer.Name;
@@ -78,27 +97,66 @@ namespace COMS.Application.Services
 
             if (await _customerRepository.SaveChangesAsync())
             {
-                return ServiceResult<CustomerDetailedDTO>.SuccessResult(_mapper.Map<CustomerDetailedDTO>(customerUpdated));
+                transaction.Status = "Success";
+                transaction.Description = "Customer updated successfully";
+            }
+            else
+            {
+                transaction.Status = "Error";
+                transaction.Description = "The customer was not updated";
             }
 
-            return ServiceResult<CustomerDetailedDTO>.ErrorResult("Ocorreu um erro ao atualizar o cliente");
+            await SaveTransactionAsync(transaction);
+
+            return _mapper.Map<TransactionDTO>(transaction);
         }
 
-        public async Task<ServiceResult<CustomerDetailedDTO>> Remove(int customerId)
+        public async Task<TransactionDTO> Remove(int customerId)
         {
+            var transaction = CreateTransaction("CustomerRemove", customerId);
+
             var customerDb = await _customerRepository.GetById(customerId);
 
             if (customerDb == null)
-                return ServiceResult<CustomerDetailedDTO>.ErrorResult("O cliente não existe");
+            {
+                transaction.Status = "Error";
+                transaction.Description = "The customer does not exist";
+                await SaveTransactionAsync(transaction);
+
+                return _mapper.Map<TransactionDTO>(transaction);
+            }
 
             await _customerRepository.Remove(customerId);
 
             if (await _customerRepository.SaveChangesAsync())
             {
-                return ServiceResult<CustomerDetailedDTO>.SuccessResult(_mapper.Map<CustomerDetailedDTO>(customerDb));
+                transaction.Status = "Success";
+                transaction.Description = "Customer removed successfully";
+            }
+            else
+            {
+                transaction.Status = "Error";
+                transaction.Description = "The customer was not removed";
             }
 
-            return ServiceResult<CustomerDetailedDTO>.ErrorResult("Ocorreu um erro ao remover o cliente");
+            await SaveTransactionAsync(transaction);
+
+            return _mapper.Map<TransactionDTO>(transaction);
+        }
+
+        private Transaction CreateTransaction(string actionName, object requestData)
+        {
+            var transaction = new Transaction
+            {
+                Name = actionName
+            };
+            transaction.SetModelRequest(requestData);
+            return transaction;
+        }
+
+        private async Task SaveTransactionAsync(Transaction transaction)
+        {
+            await _transactionRepository.Add(transaction);
         }
     }
 }

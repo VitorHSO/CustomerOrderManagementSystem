@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
+using COMS.Application.DTOs.Customer;
 using COMS.Application.DTOs.Order;
 using COMS.Application.DTOs.OrderItem;
+using COMS.Application.DTOs.Transaction;
 using COMS.Application.Interfaces;
 using COMS.Domain.Entities;
 using COMS.Domain.Interfaces;
@@ -13,13 +15,15 @@ namespace COMS.Application.Services
         private readonly IOrderItemRepository _orderItemRepository;
         private readonly IOrderRepository _orderRepository;
         private readonly IProductRepository _productRepository;
+        private readonly ITransactionRepository _transactionRepository;
         private readonly IMapper _mapper;
 
-        public OrderItemService(IOrderItemRepository orderItemRepository, IOrderRepository orderRepository, IProductRepository productRepository, IMapper mapper)
+        public OrderItemService(IOrderItemRepository orderItemRepository, IOrderRepository orderRepository, IProductRepository productRepository, ITransactionRepository transactionRepository, IMapper mapper)
         {
             _orderItemRepository = orderItemRepository;
             _orderRepository = orderRepository;
             _productRepository = productRepository;
+            _transactionRepository = transactionRepository;
             _mapper = mapper;
         }
 
@@ -51,62 +55,140 @@ namespace COMS.Application.Services
                 return ServiceResult<OrderItemDetailedDTO>.ErrorResult("O item do pedido não existe");
         }
 
-        public async Task<ServiceResult<OrderItemDetailedDTO>> Add(OrderItemDTO orderitemDTO)
+        public async Task<TransactionDTO> Add(OrderItemDTO orderItemDTO)
         {
-            var orderitem = _mapper.Map<OrderItem>(orderitemDTO);
+            var transaction = CreateTransaction("OrdemItemAdd", orderItemDTO);
 
-            await _orderItemRepository.Add(orderitem);
+            var orderItem = _mapper.Map<OrderItem>(orderItemDTO);
 
-            var orderitemAdded = await _orderItemRepository.GetById(orderitem.Id);
-            //if (await _orderItemRepository.SaveChangesAsync())
-            //{
-                return ServiceResult<OrderItemDetailedDTO>.SuccessResult(_mapper.Map<OrderItemDetailedDTO>(orderitemAdded));
-            //}
+            await _orderItemRepository.Add(orderItem);
 
-            //return ServiceResult<OrderItemDetailedDTO>.ErrorResult("Ocorreu um erro ao criar o item do pedido");
+            if (await _orderItemRepository.SaveChangesAsync())
+            {
+                transaction.Status = "Success";
+                transaction.Description = "Ordem item created successfully";
+            }
+            else
+            {
+                transaction.Status = "Error";
+                transaction.Description = "The ordem item was not created";
+            }
+
+            await SaveTransactionAsync(transaction);
+
+            return _mapper.Map<TransactionDTO>(transaction);
         }
 
-        public async Task<ServiceResult<OrderItemDetailedDTO>> Update(int orderItemId, OrderItemDTO orderItemDTO)
+        public async Task<TransactionDTO> Update(int orderItemId, OrderItemDTO orderItemDTO)
         {
+            var transaction = CreateTransaction("OrderItemUpdate", orderItemDTO);
+
             var orderItemDb = await _orderItemRepository.GetById(orderItemId);
 
             if (orderItemDb == null)
-                return ServiceResult<OrderItemDetailedDTO>.ErrorResult("O item do pedido não existe");
+            {
+                transaction.Status = "Error";
+                transaction.Description = "The ordem item does not exist";
+                await SaveTransactionAsync(transaction);
+
+                return _mapper.Map<TransactionDTO>(transaction);
+            }
 
             if (!await _orderRepository.Exists(orderItemDTO.OrderId))
-                return ServiceResult<OrderItemDetailedDTO>.ErrorResult("O pedido não existe");
+            {
+                transaction.Status = "Error";
+                transaction.Description = "The ordem does not exist";
+                await SaveTransactionAsync(transaction);
+
+                return _mapper.Map<TransactionDTO>(transaction);
+            }
 
             if (!await _productRepository.Exists(orderItemDTO.ProductId))
-                return ServiceResult<OrderItemDetailedDTO>.ErrorResult("O produto não existe no catálogo");
+            {
+                transaction.Status = "Error";
+                transaction.Description = "The product does not exist in the catalog";
+                await SaveTransactionAsync(transaction);
+
+                return _mapper.Map<TransactionDTO>(transaction);
+            }
 
             if (orderItemDTO.Quantity < 1)
-                return ServiceResult<OrderItemDetailedDTO>.ErrorResult("A quantidade mínima do item do pedido não pode ser inferior há 1");
+            {
+                transaction.Status = "Error";
+                transaction.Description = "The minimum order item quantity cannot be less than 1";
+                await SaveTransactionAsync(transaction);
+
+                return _mapper.Map<TransactionDTO>(transaction);
+            }
 
             orderItemDb.OrderId = orderItemDTO.OrderId;
             orderItemDb.ProductId = orderItemDTO.ProductId;
             orderItemDb.Quantity = orderItemDTO.Quantity;
 
             await _orderItemRepository.Update(orderItemDb);
-            var orderitemUpdated = await _orderItemRepository.GetById(orderItemId);
 
-            return ServiceResult<OrderItemDetailedDTO>.SuccessResult(_mapper.Map<OrderItemDetailedDTO>(orderitemUpdated));
+            if (await _orderItemRepository.SaveChangesAsync())
+            {
+                transaction.Status = "Success";
+                transaction.Description = "Ordem item updated successfully";
+            }
+            else
+            {
+                transaction.Status = "Error";
+                transaction.Description = "The ordem item was not updated";
+            }
+
+            await SaveTransactionAsync(transaction);
+
+            return _mapper.Map<TransactionDTO>(transaction);
         }
 
-        public async Task<ServiceResult<OrderItemDetailedDTO>> Remove(int orderItemId)
+        public async Task<TransactionDTO> Remove(int orderItemId)
         {
+            var transaction = CreateTransaction("OrderItemRemove", orderItemId);
+
             var orderItemDb = await _orderItemRepository.GetById(orderItemId);
 
             if (orderItemDb == null)
-                return ServiceResult<OrderItemDetailedDTO>.ErrorResult("O item do pedido não existe");
+            {
+                transaction.Status = "Error";
+                transaction.Description = "The ordem item does not exist";
+                await SaveTransactionAsync(transaction);
+
+                return _mapper.Map<TransactionDTO>(transaction);
+            }
 
             await _orderItemRepository.Remove(orderItemId);
 
             if (await _orderItemRepository.SaveChangesAsync())
             {
-                return ServiceResult<OrderItemDetailedDTO>.SuccessResult(_mapper.Map<OrderItemDetailedDTO>(orderItemDb));
+                transaction.Status = "Success";
+                transaction.Description = "Ordem item removed successfully";
+            }
+            else
+            {
+                transaction.Status = "Error";
+                transaction.Description = "The ordem item was not removed";
             }
 
-            return ServiceResult<OrderItemDetailedDTO>.ErrorResult("Ocorreu um erro ao remover o item do pedido");
+            await SaveTransactionAsync(transaction);
+
+            return _mapper.Map<TransactionDTO>(transaction);
+        }
+
+        private Transaction CreateTransaction(string actionName, object requestData)
+        {
+            var transaction = new Transaction
+            {
+                Name = actionName
+            };
+            transaction.SetModelRequest(requestData);
+            return transaction;
+        }
+
+        private async Task SaveTransactionAsync(Transaction transaction)
+        {
+            await _transactionRepository.Add(transaction);
         }
     }
 }

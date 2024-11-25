@@ -14,27 +14,6 @@ namespace COMS.Infra.Data.Repositories
             _context = context;
         }
 
-        public async Task<OrderItem> Add(OrderItem orderItem)
-        {
-            _context.OrderItems.Add(orderItem);
-            await _context.SaveChangesAsync();
-            return orderItem;
-        }
-
-        public async Task<OrderItem> Update(OrderItem orderItem)
-        {
-            _context.OrderItems.Update(orderItem);
-            await _context.SaveChangesAsync();
-            return orderItem;
-        }
-
-        public async Task<OrderItem> Remove(int orderItemId)
-        {
-            var OrderItemDb = await _context.OrderItems.Where(u => u.Id == orderItemId).FirstOrDefaultAsync();
-            _context.OrderItems.Remove(OrderItemDb);
-            return OrderItemDb;
-        }
-
         public async Task<IEnumerable<OrderItem>> GetAll()
         {
             return await _context.OrderItems
@@ -51,6 +30,25 @@ namespace COMS.Infra.Data.Repositories
                     .ThenInclude(oi => oi.Customer)
                 .Include(oi => oi.Product)
                 .Where(u => u.Id == orderItemId).FirstOrDefaultAsync();
+        }
+
+        public async Task<OrderItem> Add(OrderItem orderItem)
+        {
+            _context.OrderItems.Add(orderItem);
+            return orderItem;
+        }
+
+        public async Task<OrderItem> Update(OrderItem orderItem)
+        {
+            _context.OrderItems.Update(orderItem);
+            return orderItem;
+        }
+
+        public async Task<OrderItem> Remove(int orderItemId)
+        {
+            var OrderItemDb = await _context.OrderItems.Where(u => u.Id == orderItemId).FirstOrDefaultAsync();
+            _context.OrderItems.Remove(OrderItemDb);
+            return OrderItemDb;
         }
 
         public async Task<bool> SaveChangesAsync()

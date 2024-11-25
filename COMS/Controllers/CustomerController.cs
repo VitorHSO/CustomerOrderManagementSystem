@@ -9,14 +9,10 @@ namespace COMS.Controllers
     public class CustomerController : Controller
     {
         private readonly ICustomerService _customerService;
-        //private readonly IAuthenticateService _authenticateService;
-        private readonly ILogger<CustomerController> _logger;
 
-        public CustomerController(ICustomerService customerService, /*IAuthenticateService authenticateService,*/ ILogger<CustomerController> logger)
+        public CustomerController(ICustomerService customerService)
         {
             _customerService = customerService;
-            //_authenticateService = authenticateService;
-            _logger = logger;
         }
 
         [HttpGet("GetAll")]
@@ -46,47 +42,32 @@ namespace COMS.Controllers
             return BadRequest(result.ErrorMessage);
         }
 
-
-
         [HttpPost("Add")]
         public async Task<ActionResult> Add([FromBody] CustomerDTO customerDto)
         {
             if (!ModelState.IsValid)
-            {
-                _logger.LogWarning("Invalid model state for user: {@UserDto}", customerDto);
                 return BadRequest(ModelState);
-            }
 
             var result = await _customerService.Add(customerDto);
 
-            if (result.Success)
-            {
-                _logger.LogInformation("User created successfully: {@User}", result.Data);
-                return Ok(result.Data);
-                //return CreatedAtAction(nameof(Add), new { id = user.Id }, user);
-            }
+            if (result.Status == "Success")
+                return Ok(result);
 
-            return BadRequest(result.ErrorMessage);
+            return BadRequest(result);
         }
 
         [HttpPut("Update/{customerId}")]
         public async Task<ActionResult> Update(int customerId, CustomerDTO customerDto)
         {
             if (!ModelState.IsValid)
-            {
-                _logger.LogWarning("Invalid model state for user: {@user}", customerDto);
                 return BadRequest(ModelState);
-            }
 
             var result = await _customerService.Update(customerId, customerDto);
 
-            if (result.Success)
-            {
-                _logger.LogInformation("User updated successfully: {@User}", result.Data);
-                return Ok(result.Data);
-            }
+            if (result.Status == "Success")
+                return Ok(result);
 
-            return BadRequest(result.ErrorMessage);
+            return BadRequest(result);
         }
 
         [HttpDelete("Remove/{customerId}")]
@@ -94,12 +75,10 @@ namespace COMS.Controllers
         {
             var result = await _customerService.Remove(customerId);
 
-            if (result.Success)
-            {
-                return Ok(result.Data);
-            }
+            if (result.Status == "Success")
+                return Ok(result);
 
-            return BadRequest(result.ErrorMessage);
+            return BadRequest(result);
         }
     }
 }

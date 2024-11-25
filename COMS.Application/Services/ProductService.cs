@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
+using COMS.Application.DTOs.Customer;
 using COMS.Application.DTOs.Product;
+using COMS.Application.DTOs.Transaction;
 using COMS.Application.Interfaces;
 using COMS.Domain.Entities;
 using COMS.Domain.Interfaces;
@@ -10,11 +12,13 @@ namespace COMS.Application.Services
     public class ProductService : BaseService, IProductService
     {
         private readonly IProductRepository _productRepository;
+        private readonly ITransactionRepository _transactionRepository;
         private readonly IMapper _mapper;
 
-        public ProductService(IProductRepository productRepository, IMapper mapper)
+        public ProductService(IProductRepository productRepository, ITransactionRepository transactionRepository, IMapper mapper)
         {
             _productRepository = productRepository;
+            _transactionRepository = transactionRepository;
             _mapper = mapper;
         }
 
@@ -47,26 +51,43 @@ namespace COMS.Application.Services
 
         }
 
-        public async Task<ServiceResult<ProductDetailedDTO>> Add(ProductDTO productDTO)
+        public async Task<TransactionDTO> Add(ProductDTO productDTO)
         {
-            var product = _mapper.Map<Product>(productDTO);
+            var transaction = CreateTransaction("ProductAdd", productDTO);
 
+            var product = _mapper.Map<Product>(productDTO);
             var productAdded = await _productRepository.Add(product);
 
             if (await _productRepository.SaveChangesAsync())
             {
-                return ServiceResult<ProductDetailedDTO>.SuccessResult(_mapper.Map<ProductDetailedDTO>(productAdded));
+                transaction.Status = "Success";
+                transaction.Description = "Product created successfully";
+            }
+            else
+            {
+                transaction.Status = "Error";
+                transaction.Description = "The product was not created";
             }
 
-            return ServiceResult<ProductDetailedDTO>.ErrorResult("Ocorreu um erro ao criar o produto");
+            await SaveTransactionAsync(transaction);
+
+            return _mapper.Map<TransactionDTO>(transaction);
         }
 
-        public async Task<ServiceResult<ProductDetailedDTO>> Update(int productId, ProductDTO productDTO)
+        public async Task<TransactionDTO> Update(int productId, ProductDTO productDTO)
         {
+            var transaction = CreateTransaction("ProductUpdate", productDTO);
+
             var productDb = await _productRepository.GetById(productId);
 
             if (productDb == null)
-                return ServiceResult<ProductDetailedDTO>.ErrorResult("O Produto não existe");
+            {
+                transaction.Status = "Error";
+                transaction.Description = "The product does not exist";
+                await SaveTransactionAsync(transaction);
+
+                return _mapper.Map<TransactionDTO>(transaction);
+            }
 
             productDb.Name = productDTO.Name;
             productDb.Description = productDTO.Description;
@@ -76,27 +97,66 @@ namespace COMS.Application.Services
 
             if (await _productRepository.SaveChangesAsync())
             {
-                return ServiceResult<ProductDetailedDTO>.SuccessResult(_mapper.Map<ProductDetailedDTO>(productUpdated));
+                transaction.Status = "Success";
+                transaction.Description = "Product updated successfully";
+            }
+            else
+            {
+                transaction.Status = "Error";
+                transaction.Description = "The product was not updated";
             }
 
-            return ServiceResult<ProductDetailedDTO>.ErrorResult("Ocorreu um erro ao atualizar o produto");
+            await SaveTransactionAsync(transaction);
+
+            return _mapper.Map<TransactionDTO>(transaction);
         }
 
-        public async Task<ServiceResult<ProductDetailedDTO>> Remove(int productId)
+        public async Task<TransactionDTO> Remove(int productId)
         {
+            var transaction = CreateTransaction("ProductRemove", productId);
+
             var productDb = await _productRepository.GetById(productId);
 
             if (productDb == null)
-                return ServiceResult<ProductDetailedDTO>.ErrorResult("O Produto não existe");
+            {
+                transaction.Status = "Error";
+                transaction.Description = "The product does not exist";
+                await SaveTransactionAsync(transaction);
+
+                return _mapper.Map<TransactionDTO>(transaction);
+            }
 
             await _productRepository.Remove(productId);
 
             if (await _productRepository.SaveChangesAsync())
             {
-                return ServiceResult<ProductDetailedDTO>.SuccessResult(_mapper.Map<ProductDetailedDTO>(productDb));
+                transaction.Status = "Success";
+                transaction.Description = "Product removed successfully";
+            }
+            else
+            {
+                transaction.Status = "Error";
+                transaction.Description = "The product was not removed";
             }
 
-            return ServiceResult<ProductDetailedDTO>.ErrorResult("Ocorreu um erro ao remover o produto");
+            await SaveTransactionAsync(transaction);
+
+            return _mapper.Map<TransactionDTO>(transaction);
+        }
+
+        private Transaction CreateTransaction(string actionName, object requestData)
+        {
+            var transaction = new Transaction
+            {
+                Name = actionName
+            };
+            transaction.SetModelRequest(requestData);
+            return transaction;
+        }
+
+        private async Task SaveTransactionAsync(Transaction transaction)
+        {
+            await _transactionRepository.Add(transaction);
         }
     }
 }

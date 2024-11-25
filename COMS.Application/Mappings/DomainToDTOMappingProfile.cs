@@ -3,6 +3,7 @@ using COMS.Application.DTOs.Customer;
 using COMS.Application.DTOs.Order;
 using COMS.Application.DTOs.OrderItem;
 using COMS.Application.DTOs.Product;
+using COMS.Application.DTOs.Transaction;
 using COMS.Domain.Entities;
 using System.Security.Cryptography;
 
@@ -54,6 +55,15 @@ namespace COMS.Application.Mappings
 
             CreateMap<OrderItem, OrderItemDetailedDTO>()
                 .ForMember(dest => dest.ItemTotal, opt => opt.MapFrom(src => src.Quantity * src.Product.Price));
+            #endregion
+
+            #region :: Transaction
+            CreateMap<Transaction, TransactionDTO>()
+                .ForMember(dest => dest.TransactionId, opt => opt.MapFrom(src => src.Id))
+                .ReverseMap()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.TransactionId));
+
+            CreateMap<Transaction, TransactionDetailedDTO>().ReverseMap();
             #endregion
         }
 

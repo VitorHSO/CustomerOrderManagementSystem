@@ -9,14 +9,10 @@ namespace COMS.Controllers
     public class OrderItemController : Controller
     {
         private readonly IOrderItemService _orderItemService;
-        //private readonly IAuthenticateService _authenticateService;
-        private readonly ILogger<OrderItemController> _logger;
 
-        public OrderItemController(IOrderItemService orderItemService, /*IAuthenticateService authenticateService,*/ ILogger<OrderItemController> logger)
+        public OrderItemController(IOrderItemService orderItemService)
         {
             _orderItemService = orderItemService;
-            //_authenticateService = authenticateService;
-            _logger = logger;
         }
 
         [HttpGet("GetAll")]
@@ -33,10 +29,10 @@ namespace COMS.Controllers
             return BadRequest(result.ErrorMessage);
         }
 
-        [HttpGet("GetById/{orderitemId}")]
-        public async Task<ActionResult> GetById(int orderitemId)
+        [HttpGet("GetById/{orderItemId}")]
+        public async Task<ActionResult> GetById(int orderItemId)
         {
-            var result = await _orderItemService.GetById(orderitemId);
+            var result = await _orderItemService.GetById(orderItemId);
 
             if (result.Success)
             {
@@ -47,57 +43,42 @@ namespace COMS.Controllers
         }
 
         [HttpPost("Add")]
-        public async Task<ActionResult> Add([FromBody] OrderItemDTO orderitemDto)
+        public async Task<ActionResult> Add([FromBody] OrderItemDTO orderItemDto)
         {
             if (!ModelState.IsValid)
-            {
-                _logger.LogWarning("Invalid model state for user: {@UserDto}", orderitemDto);
                 return BadRequest(ModelState);
-            }
 
-            var result = await _orderItemService.Add(orderitemDto);
+            var result = await _orderItemService.Add(orderItemDto);
 
-            if (result.Success)
-            {
-                _logger.LogInformation("User created successfully: {@User}", result.Data);
-                return Ok(result.Data);
-                //return CreatedAtAction(nameof(Add), new { id = user.Id }, user);
-            }
+            if (result.Status == "Success")
+                return Ok(result);
 
-            return BadRequest(result.ErrorMessage);
+            return BadRequest(result);
         }
 
-        [HttpPut("Update/{orderitemId}")]
-        public async Task<ActionResult> Update(int orderitemId, OrderItemDTO orderitemDto)
+        [HttpPut("Update/{orderItemId}")]
+        public async Task<ActionResult> Update(int orderItemId, OrderItemDTO orderItemDto)
         {
             if (!ModelState.IsValid)
-            {
-                _logger.LogWarning("Invalid model state for user: {@user}", orderitemDto);
                 return BadRequest(ModelState);
-            }
 
-            var result = await _orderItemService.Update(orderitemId, orderitemDto);
+            var result = await _orderItemService.Update(orderItemId, orderItemDto);
 
-            if (result.Success)
-            {
-                _logger.LogInformation("User updated successfully: {@User}", result.Data);
-                return Ok(result.Data);
-            }
+            if (result.Status == "Success")
+                return Ok(result);
 
-            return BadRequest(result.ErrorMessage);
+            return BadRequest(result);
         }
 
-        [HttpDelete("Remove/{orderitemId}")]
-        public async Task<ActionResult> Remove(int orderitemId)
+        [HttpDelete("Remove/{orderItemId}")]
+        public async Task<ActionResult> Remove(int orderItemId)
         {
-            var result = await _orderItemService.Remove(orderitemId);
+            var result = await _orderItemService.Remove(orderItemId);
 
-            if (result.Success)
-            {
-                return Ok(result.Data);
-            }
+            if (result.Status == "Success")
+                return Ok(result);
 
-            return BadRequest(result.ErrorMessage);
+            return BadRequest(result);
         }
     }
 }

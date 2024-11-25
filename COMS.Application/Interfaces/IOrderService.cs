@@ -1,4 +1,5 @@
 ﻿using COMS.Application.DTOs.Order;
+using COMS.Application.DTOs.Transaction;
 using Shared.Services;
 
 namespace COMS.Application.Interfaces
@@ -7,8 +8,8 @@ namespace COMS.Application.Interfaces
     {
         Task<ServiceResult<IEnumerable<OrderDetailedDTO>>> GetAll();
         Task<ServiceResult<OrderDetailedDTO>> GetById(int orderId);
-        Task<ServiceResult<OrderDetailedDTO>> Add(OrderDTO orderDTO);
-        Task<ServiceResult<OrderDetailedDTO>> Update(int orderId, OrderDTO orderDTO);
-        Task<ServiceResult<OrderDetailedDTO>> Remove(int orderId);
+        Task<TransactionDTO> Add(OrderDTO orderDTO);
+        Task<TransactionDTO> Update(int orderId, OrderDTO orderDTO);
+        Task<TransactionDTO> Remove(int orderId);
     }
 }

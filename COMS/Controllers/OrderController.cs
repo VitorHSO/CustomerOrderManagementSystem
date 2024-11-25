@@ -9,14 +9,10 @@ namespace COMS.Controllers
     public class OrderController : Controller
     {
         private readonly IOrderService _orderService;
-        //private readonly IAuthenticateService _authenticateService;
-        private readonly ILogger<OrderController> _logger;
 
-        public OrderController(IOrderService orderService, /*IAuthenticateService authenticateService,*/ ILogger<OrderController> logger)
+        public OrderController(IOrderService orderService)
         {
             _orderService = orderService;
-            //_authenticateService = authenticateService;
-            _logger = logger;
         }
 
         [HttpGet("GetAll")]
@@ -52,40 +48,28 @@ namespace COMS.Controllers
         public async Task<ActionResult> Add([FromBody] OrderDTO orderDto)
         {
             if (!ModelState.IsValid)
-            {
-                _logger.LogWarning("Invalid model state for user: {@OrderDto}", orderDto);
                 return BadRequest(ModelState);
-            }
 
             var result = await _orderService.Add(orderDto);
 
-            if (result.Success)
-            {
-                _logger.LogInformation("User created successfully: {@Order}", result.Data);
-                return Ok(result.Data);
-            }
+            if (result.Status == "Success")
+                return Ok(result);
 
-            return BadRequest(result.ErrorMessage);
+            return BadRequest(result);
         }
 
         [HttpPut("Update/{orderId}")]
         public async Task<ActionResult> Update(int orderId, OrderDTO orderDto)
         {
             if (!ModelState.IsValid)
-            {
-                _logger.LogWarning("Invalid model state for user: {@OrderDto}", orderDto);
                 return BadRequest(ModelState);
-            }
 
             var result = await _orderService.Update(orderId, orderDto);
 
-            if (result.Success)
-            {
-                _logger.LogInformation("User updated successfully: {@Order}", result.Data);
-                return Ok(result.Data);
-            }
+            if (result.Status == "Success")
+                return Ok(result);
 
-            return BadRequest(result.ErrorMessage);
+            return BadRequest(result);
         }
 
         [HttpDelete("Remove/{orderId}")]
@@ -93,12 +77,10 @@ namespace COMS.Controllers
         {
             var result = await _orderService.Remove(orderId);
 
-            if (result.Success)
-            {
-                return Ok(result.Data);
-            }
+            if (result.Status == "Success")
+                return Ok(result);
 
-            return BadRequest(result.ErrorMessage);
+            return BadRequest(result);
         }
     }
 }

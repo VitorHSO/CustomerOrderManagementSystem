@@ -36,22 +36,20 @@ namespace COMS.Infra.Data.Repositories
         public async Task<Order> Add(Order order)
         {
             _context.Orders.Add(order);
-            await _context.SaveChangesAsync();
             return order;
         }
 
         public async Task<Order> Update(Order order)
         {
             _context.Orders.Update(order);
-            await _context.SaveChangesAsync();
             return order;
         }
 
         public async Task<Order> Remove(int orderId)
         {
-            var OrderDb = await _context.Orders.Where(u => u.Id == orderId).FirstOrDefaultAsync();
-            _context.Orders.Remove(OrderDb);
-            return OrderDb;
+            var orderDb = await _context.Orders.Where(u => u.Id == orderId).FirstOrDefaultAsync();
+            _context.Orders.Remove(orderDb);
+            return orderDb;
         }
 
         public async Task<bool> Exists(int orderId)

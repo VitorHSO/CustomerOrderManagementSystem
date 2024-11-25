@@ -1,4 +1,5 @@
 ﻿using COMS.Application.DTOs.Product;
+using COMS.Application.DTOs.Transaction;
 using Shared.Services;
 
 namespace COMS.Application.Interfaces
@@ -7,8 +8,8 @@ namespace COMS.Application.Interfaces
     {
         Task<ServiceResult<IEnumerable<ProductDetailedDTO>>> GetAll();
         Task<ServiceResult<ProductDetailedDTO>> GetById(int productId);
-        Task<ServiceResult<ProductDetailedDTO>> Add(ProductDTO productDTO);
-        Task<ServiceResult<ProductDetailedDTO>> Update(int productId, ProductDTO productDTO);
-        Task<ServiceResult<ProductDetailedDTO>> Remove(int productId);
+        Task<TransactionDTO> Add(ProductDTO productDTO);
+        Task<TransactionDTO> Update(int productId, ProductDTO productDTO);
+        Task<TransactionDTO> Remove(int productId);
     }
 }
