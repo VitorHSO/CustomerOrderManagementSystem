@@ -8,7 +8,7 @@ using Shared.Services;
 
 namespace COMS.Application.Services
 {
-    public class CustomerService : BaseService, ICustomerService
+    public class CustomerService : ICustomerService
     {
         private readonly ICustomerRepository _customerRepository;
         private readonly ITransactionRepository _transactionRepository;

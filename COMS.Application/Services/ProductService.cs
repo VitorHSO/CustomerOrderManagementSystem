@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using COMS.Application.DTOs.Customer;
 using COMS.Application.DTOs.Product;
 using COMS.Application.DTOs.Transaction;
 using COMS.Application.Interfaces;
@@ -9,7 +8,7 @@ using Shared.Services;
 
 namespace COMS.Application.Services
 {
-    public class ProductService : BaseService, IProductService
+    public class ProductService : IProductService
     {
         private readonly IProductRepository _productRepository;
         private readonly ITransactionRepository _transactionRepository;

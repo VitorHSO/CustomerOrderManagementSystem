@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace COMS.Infra.Data.Migrations
 {
     /// <inheritdoc />
@@ -103,6 +105,25 @@ namespace COMS.Infra.Data.Migrations
                         principalTable: "Products",
                         principalColumn: "ProductId",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.InsertData(
+                table: "Customers",
+                columns: new[] { "CustomerId", "Email", "EncryptionIV", "Name", "Phone" },
+                values: new object[,]
+                {
+                    { 1, "hyRu1a/MmuqWXtbkEJbuxtg9tpuZxDEkl7yxvn1ism4=", "VVsWXlPNDIyfoQ/+z2Re4Q==", "/lxTyiQAzysKgZjreVi0OQ==", "lRxujHigli6mGZ8o4HWdtpttwCcC2BkBVcPf0/DmVuo=" },
+                    { 2, "oWvXCQFX7kNrkSPCKK8xgQ4xb5l6mKnFbzEX+rrsxCA=", "O2Crb57pW9boXtCepoB88w==", "g3mTV/4c7qXT4b8J1pxsdg==", "RaYry7PWufqvqTKWfJEjt5fK/9WsoSn2KqnjrpCVAx8=" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Products",
+                columns: new[] { "ProductId", "Description", "Name", "Price" },
+                values: new object[,]
+                {
+                    { 1, "Placa de Vídeo RTX 4090", "RTX 4090", 12000m },
+                    { 2, "Processador AMD Ryzen 7 7800X3D", "Ryzen 7 7800X3D", 3799m },
+                    { 3, "Fonte XPG Kyber, 850W, 80 Plus Gold, Com Cabo, Preto - KYBER850G-BKCBR", "Fonte XPG Kyber, 850W", 439m }
                 });
 
             migrationBuilder.CreateIndex(

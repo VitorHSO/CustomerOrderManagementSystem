@@ -53,6 +53,24 @@ namespace COMS.Infra.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Customers");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Email = "hyRu1a/MmuqWXtbkEJbuxtg9tpuZxDEkl7yxvn1ism4=",
+                            EncryptionIV = "VVsWXlPNDIyfoQ/+z2Re4Q==",
+                            Name = "/lxTyiQAzysKgZjreVi0OQ==",
+                            Phone = "lRxujHigli6mGZ8o4HWdtpttwCcC2BkBVcPf0/DmVuo="
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Email = "oWvXCQFX7kNrkSPCKK8xgQ4xb5l6mKnFbzEX+rrsxCA=",
+                            EncryptionIV = "O2Crb57pW9boXtCepoB88w==",
+                            Name = "g3mTV/4c7qXT4b8J1pxsdg==",
+                            Phone = "RaYry7PWufqvqTKWfJEjt5fK/9WsoSn2KqnjrpCVAx8="
+                        });
                 });
 
             modelBuilder.Entity("COMS.Domain.Entities.Order", b =>
@@ -131,6 +149,29 @@ namespace COMS.Infra.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Products");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Description = "Placa de Vídeo RTX 4090",
+                            Name = "RTX 4090",
+                            Price = 12000m
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Description = "Processador AMD Ryzen 7 7800X3D",
+                            Name = "Ryzen 7 7800X3D",
+                            Price = 3799m
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Description = "Fonte XPG Kyber, 850W, 80 Plus Gold, Com Cabo, Preto - KYBER850G-BKCBR",
+                            Name = "Fonte XPG Kyber, 850W",
+                            Price = 439m
+                        });
                 });
 
             modelBuilder.Entity("COMS.Domain.Entities.Transaction", b =>

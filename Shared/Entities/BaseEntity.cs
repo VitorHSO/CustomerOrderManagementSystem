@@ -1,12 +1,11 @@
-﻿using Shared.Enums;
-using Shared.Interfaces;
+﻿using Shared.Interfaces;
 using System.Security.Cryptography;
 
 namespace Shared.Entities
 {
     public abstract class BaseEntity : IPreCreatable
     {
-        public int Id { get; set; }    
+        public int Id { get; set; }
 
         protected BaseEntity()
         {
@@ -26,14 +25,11 @@ namespace Shared.Entities
         {
             using (Aes aesAlg = Aes.Create())
             {
-                // A chave deve ter 32 bytes (256 bits) para AES-256
-                //aesAlg.KeySize = 256; // AES-256
                 aesAlg.GenerateIV();
 
                 // Converte as chaves em strings base64 para facilitar o armazenamento
                 string encryptionIV = Convert.ToBase64String(aesAlg.IV);
 
-                // Retorna as chaves em uma tupla
                 return encryptionIV;
             }
         }

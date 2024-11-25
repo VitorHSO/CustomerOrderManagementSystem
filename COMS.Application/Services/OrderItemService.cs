@@ -1,6 +1,4 @@
 ﻿using AutoMapper;
-using COMS.Application.DTOs.Customer;
-using COMS.Application.DTOs.Order;
 using COMS.Application.DTOs.OrderItem;
 using COMS.Application.DTOs.Transaction;
 using COMS.Application.Interfaces;
@@ -10,7 +8,7 @@ using Shared.Services;
 
 namespace COMS.Application.Services
 {
-    public class OrderItemService : BaseService, IOrderItemService
+    public class OrderItemService : IOrderItemService
     {
         private readonly IOrderItemRepository _orderItemRepository;
         private readonly IOrderRepository _orderRepository;

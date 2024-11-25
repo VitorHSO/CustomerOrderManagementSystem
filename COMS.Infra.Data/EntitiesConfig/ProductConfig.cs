@@ -12,7 +12,7 @@ namespace COMS.Infra.Data.EntitiesConfig
             builder.Property(e => e.Id).HasColumnName("ProductId").IsRequired();
             builder.Property(c => c.Name).HasMaxLength(255).IsRequired();
             builder.Property(c => c.Description).HasColumnType("VARCHAR(MAX)").IsRequired();
-            builder.Property(c => c.Price).IsRequired();
+            builder.Property(c => c.Price).HasColumnType("decimal(18,2)").IsRequired();
         }
     }
 }

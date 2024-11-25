@@ -48,6 +48,22 @@ namespace COMS.Infra.Data.Context
             // Aplicar outras configurações específicas
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(ComsDbContext).Assembly);
 
+            // Seed Data
+            #region :: Customer
+            modelBuilder.Entity<Customer>().HasData(
+                new Customer { Id = 1, Name = "/lxTyiQAzysKgZjreVi0OQ==", Email = "hyRu1a/MmuqWXtbkEJbuxtg9tpuZxDEkl7yxvn1ism4=", Phone = "lRxujHigli6mGZ8o4HWdtpttwCcC2BkBVcPf0/DmVuo=", EncryptionIV = "VVsWXlPNDIyfoQ/+z2Re4Q==" },
+                new Customer { Id = 2, Name = "g3mTV/4c7qXT4b8J1pxsdg==", Email = "oWvXCQFX7kNrkSPCKK8xgQ4xb5l6mKnFbzEX+rrsxCA=", Phone = "RaYry7PWufqvqTKWfJEjt5fK/9WsoSn2KqnjrpCVAx8=", EncryptionIV = "O2Crb57pW9boXtCepoB88w==" }
+            );
+            #endregion
+
+            #region :: Product
+            modelBuilder.Entity<Product>().HasData(
+                new Product { Id = 1, Name = "RTX 4090", Description = "Placa de Vídeo RTX 4090", Price = 12000 },
+                new Product { Id = 2, Name = "Ryzen 7 7800X3D", Description = "Processador AMD Ryzen 7 7800X3D", Price = 3799 },
+                new Product { Id = 3, Name = "Fonte XPG Kyber, 850W", Description = "Fonte XPG Kyber, 850W, 80 Plus Gold, Com Cabo, Preto - KYBER850G-BKCBR", Price = 439 }
+            );
+            #endregion
+
             base.OnModelCreating(modelBuilder);
         }
 
@@ -58,7 +74,7 @@ namespace COMS.Infra.Data.Context
             {
                 if (entry.State == EntityState.Added && entry.Entity is IPreCreatable preCreatableEntity)
                 {
-                    preCreatableEntity.PreCreate(); // Chama o PreCreate antes de salvar
+                    preCreatableEntity.PreCreate();
                 }
             }
 
